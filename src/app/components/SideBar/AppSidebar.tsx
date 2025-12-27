@@ -20,6 +20,7 @@ import {
   Trash,
   CopyPlus,
   Copy,
+  Folder,
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,7 +43,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -65,6 +65,7 @@ function AppSidebar({
   setTags,
   projects,
   setProjects,
+  bookmarks,
 }: {
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
@@ -80,6 +81,7 @@ function AppSidebar({
   setProjects: React.Dispatch<
     React.SetStateAction<{ id: number; name: string }[]>
   >;
+  bookmarks: any;
 }) {
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
@@ -123,7 +125,7 @@ function AppSidebar({
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🤚</span>
+            <img src="/logo.svg" alt="logo" className="w-6 h-6" />
             <span className="font-semibold group-data-[collapsible=icon]:hidden">
               Keepable
             </span>
@@ -217,14 +219,30 @@ function AppSidebar({
                 </div>
               )}
 
-              {projects.map((project) => (
-                <SidebarMenuItem key={project.id} className="">
-                  <SidebarMenuButton tooltip={project.name} className="">
-                    <FolderOpen className="w-4 h-4" />
-                    <span>{project.name}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {projects.map((project) => {
+                // Get bookmarks in this project
+                const projectBookmarks = bookmarks.filter((bookmark) =>
+                  bookmark.projects?.some((p) => p.id === project.id)
+                );
+
+                return (
+                  <SidebarMenuItem key={project.id} className="">
+                    <SidebarMenuButton tooltip={project.name} className="">
+                      <FolderOpen className="w-4 h-4" />
+                      <span>{project.name}</span>
+                      <span className="ml-auto text-xs text-gray-500">
+                        {projectBookmarks.length}
+                      </span>
+                    </SidebarMenuButton>
+                    {/* Optional: Show bookmark list when expanded */}
+                    {projectBookmarks.length > 0 && (
+                      <div className="ml-6 mt-1 text-xs text-gray-600">
+                        {projectBookmarks.map((b) => b.title).join(", ")}
+                      </div>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -334,9 +352,14 @@ export default function KeepablePage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [editingBookmark, setEditingBookmark] = useState<number | null>(null);
+  const [editingBookmark, setEditingBookmark] = useState<any | null>(null);
   const [editTags, setEditTags] = useState<string[]>([]);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
+  const [showProjectsDialog, setShowProjectsDialog] = useState(false);
+  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const toggleTag = (tagName: string) => {
     setSelectedTags((prev) =>
@@ -408,6 +431,7 @@ export default function KeepablePage() {
     );
     setOpenMenuId(null);
   };
+
   const unTogglePin = (id: number) => {
     setBookmarks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, isPinned: false } : b))
@@ -420,35 +444,23 @@ export default function KeepablePage() {
     setOpenMenuId(null);
   };
 
-  const addToProject = (id: number) => {
-    setProjects((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, isPinned: !b.isPinned } : b))
-    );
-    setOpenMenuId(null);
-  };
-
   const openEditDialog = (bookmark: any) => {
     setEditingBookmark(bookmark.id);
-    setEditTags(bookmark.tags);
-    setOpenMenuId(null);
-  };
-
-  const saveEditedTags = () => {
-    console.log(editTags);
-    if (editTags.map((t) => t.trim()).includes("")) return;
-    setBookmarks((prev) =>
-      prev.map((b) => (b.id === editingBookmark ? { ...b, tags: editTags } : b))
-    );
-    setEditingBookmark(null);
     setOpenMenuId(null);
   };
 
   const toggleEditTag = (tagName: string) => {
-    console.log(tagName);
-    setEditTags((prev) =>
-      prev.includes(tagName)
-        ? prev.filter((t) => t !== tagName)
-        : [...prev, tagName]
+    setBookmarks((prev) =>
+      prev.map((b) =>
+        b.id === editingBookmark.id
+          ? {
+              ...b,
+              tags: b.tags.includes(tagName)
+                ? b.tags.filter((t) => t !== tagName)
+                : [...b.tags, tagName],
+            }
+          : b
+      )
     );
   };
 
@@ -471,13 +483,74 @@ export default function KeepablePage() {
       return url;
     }
   };
+
   const [tags, setTags] = useState([
     { id: 1, name: "Read later", icon: Bookmark },
     { id: 2, name: "Learning", icon: Book },
     { id: 3, name: "Tools", icon: Wrench },
     { id: 4, name: "Inspiration", icon: Lightbulb },
   ]);
+
   const [projects, setProjects] = useState<{ id: number; name: string }[]>([]);
+  const [selectedBookmarkId, setSelectedBookmarkId] = useState(null);
+
+  const addBookmarkToProject = (bookmarkId: number, projectId: number) => {
+    // Find the project details
+    const project = projects.find((p) => p.id === projectId);
+
+    if (!project) return;
+
+    setBookmarks((prev) =>
+      prev.map((b) => {
+        if (b.id === bookmarkId) {
+          const currentProjects = b.projects || [];
+          const existingProjectIndex = currentProjects.findIndex(
+            (p) => p.id === projectId
+          );
+
+          if (existingProjectIndex !== -1) {
+            // Update existing project (in case name changed)
+            const updatedProjects = [...currentProjects];
+            updatedProjects[existingProjectIndex] = {
+              id: project.id,
+              name: project.name,
+            };
+            return {
+              ...b,
+              projects: updatedProjects,
+            };
+          } else {
+            // Add new project
+            return {
+              ...b,
+              projects: [
+                ...currentProjects,
+                { id: project.id, name: project.name },
+              ],
+            };
+          }
+        }
+        return b;
+      })
+    );
+  };
+
+  const toggleBookmarkProject = (bookmarkId: number, projectId: number) => {
+    setBookmarks((prev) =>
+      prev.map((b) =>
+        b.id === bookmarkId
+          ? {
+              ...b,
+              projects: b.projects.includes(projectId)
+                ? b.projects.filter((id) => id !== projectId) // remove
+                : [...b.projects, projectId], // add
+            }
+          : b
+      )
+    );
+  };
+
+  console.log("test value", bookmarks);
 
   return (
     <SidebarProvider
@@ -499,12 +572,16 @@ export default function KeepablePage() {
           setTags={setTags}
           projects={projects}
           setProjects={setProjects}
+          bookmarks={bookmarks}
         />
 
         <main className="flex-1 flex flex-col bg-amber-50/30">
           {/* Header with Trigger and User Avatar */}
           <header className="flex items-center justify-between p-4 md:px-8">
-            <SidebarTrigger className="md:hidden" onClick={() => {}} />
+            <SidebarTrigger
+              className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-amber-300 transition-all md:hidden"
+              onClick={() => {}}
+            />
             <div className="flex-1" />
             <div className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-amber-300 transition-all">
               <span className="text-sm">😊</span>
@@ -667,7 +744,10 @@ export default function KeepablePage() {
                               Copy Link
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => addToProject(bookmark.id)}
+                              onClick={() => {
+                                setSelectedBookmarkId(bookmark.id); // Store which bookmark we're adding to a project
+                                setShowProjectsDialog(true); // Open the projects dialog
+                              }}
                               inset
                               className="flex gap-2"
                             >
@@ -777,14 +857,20 @@ export default function KeepablePage() {
             >
               <div
                 className="bg-white rounded-2xl p-6 w-fit shadow-xl"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEditDialog(editingBookmark);
+                }}
               >
                 <h3 className="text-lg font-semibold mb-4">Edit tags</h3>
 
                 <div className="space-y-2 mb-6">
                   {tags.map((tag) => {
                     const Icon = tag.icon;
-                    const isSelected = editTags.includes(tag.name);
+                    const isSelected = bookmarks
+                      .find((b) => b.id === editingBookmark.id)
+                      ?.tags.includes(tag.name);
+
                     return (
                       <label
                         key={tag.name}
@@ -815,10 +901,155 @@ export default function KeepablePage() {
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => saveEditedTags()}
                     className="bg-gray-900 hover:bg-gray-800 text-white px-4"
                   >
                     Apply tags
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Projects Dialog */}
+          {showProjectsDialog && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowProjectsDialog(false)}
+            >
+              <div
+                className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold mb-4">Select Project</h3>
+
+                <div className="space-y-2 mb-6 max-h-96 overflow-y-auto">
+                  {projects.map((project) => {
+                    const isSelected = selectedProjectId === project.id;
+
+                    return (
+                      <label
+                        key={project.id}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="project"
+                          checked={isSelected}
+                          onChange={() => setSelectedProjectId(project.id)}
+                          className="w-5 h-5 border-gray-300 text-amber-600 focus:ring-amber-500"
+                        />
+                        <Folder className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-medium">
+                          {project.name}
+                        </span>
+                      </label>
+                    );
+                  })}
+
+                  {/* Add New Folder Option */}
+                  <div className="pt-2 mt-2 border-t border-gray-200">
+                    <button
+                      onClick={() => {
+                        setShowProjectsDialog(false);
+                        setShowNewFolderDialog(true);
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer w-full text-left"
+                    >
+                      <Plus className="w-4 h-4 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-600">
+                        Add new folder
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowProjectsDialog(false)}
+                    className="px-4"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-gray-900 hover:bg-gray-800 text-white px-4"
+                    disabled={!selectedProjectId}
+                    onClick={() => {
+                      if (selectedBookmarkId && selectedProjectId) {
+                        addBookmarkToProject(
+                          selectedBookmarkId,
+                          selectedProjectId
+                        );
+
+                        // Reset and close
+                        setShowProjectsDialog(false);
+                        setSelectedProjectId(null);
+                        setSelectedBookmarkId(null);
+                      }
+                    }}
+                  >
+                    Select
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* New Folder Dialog */}
+          {showNewFolderDialog && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowNewFolderDialog(false)}
+            >
+              <div
+                className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold mb-4">Add New Folder</h3>
+
+                <input
+                  type="text"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="Enter folder name"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 mb-6"
+                  autoFocus
+                />
+
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowNewFolderDialog(false);
+                      setNewFolderName("");
+                    }}
+                    className="px-4"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-gray-900 hover:bg-gray-800 text-white px-4"
+                    onClick={() => {
+                      if (newFolderName.trim()) {
+                        const newProject = {
+                          id: Date.now(),
+                          name: newFolderName.trim(),
+                        };
+                        setProjects([...projects, newProject]);
+                        setSelectedProjectId(newProject.id);
+                        setNewFolderName("");
+                        setShowNewFolderDialog(false);
+                        setShowProjectsDialog(true);
+                      }
+                    }}
+                  >
+                    Add Folder
                   </Button>
                 </div>
               </div>
