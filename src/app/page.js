@@ -1,10 +1,9 @@
-import Image from "next/image";
-import KeepablePage from "./components/SideBar/AppSidebar";
+import KeepablePage from "./Pages/KeepablePage/KeepablePage";
 
 export default function Home() {
   return (
-    <>
+    <div>
       <KeepablePage />
-    </>
+    </div>
   );
 }
