@@ -25,8 +25,6 @@ It helps you keep everything you care about in one place — structured by **pro
 
 ![Keepable App Screenshot](snapshot.png)
 
-> _(Replace `snapshot.png` with your actual screenshot file if needed)_
-
 ---
 
 ## 🛠 Tech Stack
