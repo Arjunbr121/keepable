@@ -1,36 +1,189 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 📌 Keepable
 
-## Getting Started
+**Keepable** is a modern web application to **save, organize, and tag links or notes** effortlessly.
+It helps you keep everything you care about in one place — structured by **projects**, **tags**, and **pinned items** for quick access.
 
-First, run the development server:
+> Built with **Next.js**, **shadcn/ui**, **Framer Motion**, and a clean, minimal UI.
+
+---
+
+## ✨ Features
+
+- 🔖 **Save links & notes** with rich previews
+- 🏷 **Tag-based organization** (Read later, Learning, Tools, Inspiration, etc.)
+- 📁 **Projects (Folders)** to group related bookmarks
+- 📌 **Pin important bookmarks** to the top
+- 🔍 **Search bookmarks instantly**
+- 🗑 **Clear All links** (removes all saved links while keeping tags and projects)
+- 💾 **Local storage persistence** (data stays after refresh)
+- ⚡ **Fast & responsive UI**
+- 🎨 Smooth animations using Framer Motion
+
+---
+
+## 🖼 Preview
+
+![Keepable App Screenshot](snapshot.png)
+
+> _(Replace `snapshot.png` with your actual screenshot file if needed)_
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **UI Components**: shadcn/ui
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **State Persistence**: LocalStorage
+- **Icons**: Lucide Icons
+- **Notifications**: Sonner
+- **Storage**: LocalStorage with structured data
+
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/Arjunbr121/keepable.git
+cd keepable
+```
+
+---
+
+### 2️⃣ Install dependencies
+
+```bash
+npm install
+```
+
+---
+
+### 3️⃣ Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open your browser at:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧠 How It Works
 
-To learn more about Next.js, take a look at the following resources:
+- Paste a **link or note** into the input field
+- Add **tags** before saving
+- Organize bookmarks into **projects**
+- **Pin** frequently used links
+- Search or filter anytime
+- All data is saved locally in your browser
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📦 Folder Structure (High-level)
 
-## Deploy on Vercel
+```
+keepable/
+├── public/
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── logo.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+│
+├── src/
+│   ├── app/
+│   │   ├── components/
+│   │   │   └── SideBar/
+│   │   │       └── AppSidebar.tsx
+│   │   │
+│   │   ├── Pages/
+│   │   │   └── KeepablePage/
+│   │   │       └── KeepablePage.tsx
+│   │   │
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.js
+│   │   └── page.js
+│   │
+│   ├── components/
+│   ├── hooks/
+│   └── lib/
+│
+├── .gitignore
+├── components.json
+├── eslint.config.mjs
+├── jsconfig.json
+├── next-env.d.ts
+├── next.config.mjs
+├── package.json
+├── package-lock.json
+├── postcss.config.mjs
+└── README.md
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🌐 Live Demo
+
+👉 **Live App:**
+[https://keepable-o2pi.vercel.app/](https://keepable-o2pi.vercel.app/)
+
+---
+
+## 🔌 Chrome Extension (Optional)
+
+Keepable also has a **Chrome Extension** that opens the app instantly from the browser toolbar.
+
+- One-click access to Keepable
+- Perfect for saving links while browsing
+
+_(Extension publishing in progress)_
+
+---
+
+## 🔮 Future Enhancements
+
+- 🔐 User authentication
+- ☁️ Cloud sync (Supabase / Firebase)
+- 📝 Rich-text notes
+- 🗂 Nested folders
+- 🔄 Import / Export bookmarks
+- 📱 PWA support
+- 🤝 Team collaboration
+- 🌐 Multi-device sync
+- 📱 Mobile-friendly responsive design
+- 🎨 Dark mode support
+- 🌙 Auto-switch between light/dark themes
+- 🎨 Customizable themes
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a new branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+## 🙌 Acknowledgements
+
+- Next.js team
+- shadcn/ui
+- Framer Motion
+- Lucide Icons
+- Vercel
+
+---
